@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /$
+Allow: /auth
+Disallow: /dashboard
+Disallow: /vouchers
+Disallow: /packages
+Disallow: /sessions
+Disallow: /router
+Disallow: /wireguard
+Disallow: /reports
+Disallow: /staff
+Disallow: /audit-logs
+Disallow: /login-pages
+Disallow: /settings
