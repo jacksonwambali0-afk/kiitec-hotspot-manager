@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      packages: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data_limit_mb: number | null
+          description: string | null
+          device_limit: number
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          mikrotik_profile: string | null
+          name: string
+          price: number
+          speed_down_kbps: number | null
+          speed_up_kbps: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data_limit_mb?: number | null
+          description?: string | null
+          device_limit?: number
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          mikrotik_profile?: string | null
+          name: string
+          price?: number
+          speed_down_kbps?: number | null
+          speed_up_kbps?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data_limit_mb?: number | null
+          description?: string | null
+          device_limit?: number
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          mikrotik_profile?: string | null
+          name?: string
+          price?: number
+          speed_down_kbps?: number | null
+          speed_up_kbps?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -68,6 +119,131 @@ export type Database = {
         }
         Relationships: []
       }
+      voucher_batches: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          package_id: string | null
+          prefix: string | null
+          quantity: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          package_id?: string | null
+          prefix?: string | null
+          quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          package_id?: string | null
+          prefix?: string | null
+          quantity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voucher_batches_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vouchers: {
+        Row: {
+          activated_at: string | null
+          batch_id: string | null
+          bound_mac: string | null
+          buyer_name: string | null
+          buyer_phone: string | null
+          code: string
+          comment: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          package_id: string | null
+          password: string
+          price: number
+          sold_at: string | null
+          sold_by: string | null
+          status: Database["public"]["Enums"]["voucher_status"]
+          updated_at: string
+          used_data_mb: number
+          username: string
+        }
+        Insert: {
+          activated_at?: string | null
+          batch_id?: string | null
+          bound_mac?: string | null
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          code: string
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          package_id?: string | null
+          password: string
+          price?: number
+          sold_at?: string | null
+          sold_by?: string | null
+          status?: Database["public"]["Enums"]["voucher_status"]
+          updated_at?: string
+          used_data_mb?: number
+          username: string
+        }
+        Update: {
+          activated_at?: string | null
+          batch_id?: string | null
+          bound_mac?: string | null
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          code?: string
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          package_id?: string | null
+          password?: string
+          price?: number
+          sold_at?: string | null
+          sold_by?: string | null
+          status?: Database["public"]["Enums"]["voucher_status"]
+          updated_at?: string
+          used_data_mb?: number
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vouchers_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "voucher_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -80,9 +256,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_sales_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "cashier" | "technician"
+      voucher_status:
+        | "unused"
+        | "sold"
+        | "active"
+        | "used"
+        | "expired"
+        | "disabled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -211,6 +395,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "cashier", "technician"],
+      voucher_status: [
+        "unused",
+        "sold",
+        "active",
+        "used",
+        "expired",
+        "disabled",
+      ],
     },
   },
 } as const
