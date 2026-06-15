@@ -328,6 +328,15 @@ function VouchersPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setToPrint([v])}
+                            aria-label="Print voucher"
+                            title="Print card"
+                          >
+                            <Printer className="h-4 w-4 text-muted-foreground" />
+                          </Button>
                           {v.status === "unused" && (
                             <Button
                               variant="ghost"
