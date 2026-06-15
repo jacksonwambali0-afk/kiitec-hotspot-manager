@@ -225,4 +225,44 @@
   .shadow-elevated {
     box-shadow: var(--shadow-elevated);
   }
+  .print-exact {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* ── Voucher printing ─────────────────────────────────────────────
+ * The print root lives in a body-level portal and stays hidden on
+ * screen. When the browser print dialog opens, everything except the
+ * print root is hidden so only the voucher cards reach the paper. */
+#voucher-print-root {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+  body {
+    background: #ffffff !important;
+  }
+  body * {
+    visibility: hidden !important;
+  }
+  #voucher-print-root,
+  #voucher-print-root * {
+    visibility: visible !important;
+  }
+  #voucher-print-root {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
+  .voucher-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }
