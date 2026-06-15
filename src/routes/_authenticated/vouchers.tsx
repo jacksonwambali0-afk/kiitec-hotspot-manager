@@ -183,17 +183,41 @@ function VouchersPage() {
     toast.success("Code copied");
   };
 
+  const toggleOne = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const allSelected = filtered.length > 0 && filtered.every((v) => selected.has(v.id));
+  const toggleAll = () =>
+    setSelected(allSelected ? new Set() : new Set(filtered.map((v) => v.id)));
+
+  const printSelected = () => {
+    const rows = filtered.filter((v) => selected.has(v.id));
+    if (rows.length === 0) return toast.error("Select at least one voucher to print");
+    setToPrint(rows);
+  };
+
   return (
     <>
       <PageHeader
         title="Vouchers"
         description="Generate batches, sell, and track the lifecycle of every voucher."
         actions={
-          <Button onClick={() => setGenerateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Generate
-          </Button>
+          <>
+            <Button variant="outline" onClick={printSelected} disabled={selected.size === 0}>
+              <Printer className="mr-2 h-4 w-4" /> Print
+              {selected.size > 0 ? ` (${selected.size})` : ""}
+            </Button>
+            <Button onClick={() => setGenerateOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Generate
+            </Button>
+          </>
         }
       />
+
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <StatCard label="Unused" value={stats?.unused} status="unused" />
