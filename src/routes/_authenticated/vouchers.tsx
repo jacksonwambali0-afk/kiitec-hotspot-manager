@@ -296,7 +296,14 @@ function VouchersPage() {
                 </TableHeader>
                 <TableBody>
                   {filtered.map((v) => (
-                    <TableRow key={v.id}>
+                    <TableRow key={v.id} data-state={selected.has(v.id) ? "selected" : undefined}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selected.has(v.id)}
+                          onCheckedChange={() => toggleOne(v.id)}
+                          aria-label={`Select ${v.code}`}
+                        />
+                      </TableCell>
                       <TableCell>
                         <button
                           onClick={() => copyCode(v.code)}
