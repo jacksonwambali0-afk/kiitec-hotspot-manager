@@ -9,6 +9,7 @@ import {
   Trash2,
   Ticket,
   BadgeDollarSign,
+  Printer,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
