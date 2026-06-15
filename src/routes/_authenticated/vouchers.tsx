@@ -392,6 +392,11 @@ function VouchersPage() {
         packages={packages}
       />
       <SellVoucherDialog voucher={selling} onOpenChange={(o) => !o && setSelling(null)} />
+      <PrintVouchersDialog
+        vouchers={toPrint}
+        packages={packages}
+        onOpenChange={(o) => !o && setToPrint(null)}
+      />
 
       <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent>
