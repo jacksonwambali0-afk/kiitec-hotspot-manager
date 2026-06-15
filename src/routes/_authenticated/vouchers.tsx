@@ -9,6 +9,7 @@ import {
   Trash2,
   Ticket,
   BadgeDollarSign,
+  Printer,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -23,11 +24,13 @@ import {
 import { PageHeader, RoleGuard } from "@/components/layout/PageParts";
 import { GenerateVouchersDialog } from "@/components/vouchers/GenerateVouchersDialog";
 import { SellVoucherDialog } from "@/components/vouchers/SellVoucherDialog";
+import { PrintVouchersDialog } from "@/components/vouchers/PrintVouchersDialog";
 import type { VoucherRow } from "@/components/vouchers/voucher-types";
 import type { PackageRow } from "@/components/packages/PackageDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -106,6 +109,8 @@ function VouchersPage() {
   const [generateOpen, setGenerateOpen] = useState(false);
   const [selling, setSelling] = useState<VoucherRow | null>(null);
   const [toDelete, setToDelete] = useState<VoucherRow | null>(null);
+  const [toPrint, setToPrint] = useState<VoucherRow[] | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [packageFilter, setPackageFilter] = useState<string>("all");
@@ -178,17 +183,42 @@ function VouchersPage() {
     toast.success("Code copied");
   };
 
+  const toggleOne = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const allSelected = filtered.length > 0 && filtered.every((v) => selected.has(v.id));
+  const toggleAll = () =>
+    setSelected(allSelected ? new Set() : new Set(filtered.map((v) => v.id)));
+
+  const printSelected = () => {
+    const rows = filtered.filter((v) => selected.has(v.id));
+    if (rows.length === 0) return toast.error("Select at least one voucher to print");
+    setToPrint(rows);
+  };
+
   return (
     <>
       <PageHeader
         title="Vouchers"
         description="Generate batches, sell, and track the lifecycle of every voucher."
         actions={
-          <Button onClick={() => setGenerateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Generate
-          </Button>
+          <>
+            <Button variant="outline" onClick={printSelected} disabled={selected.size === 0}>
+              <Printer className="mr-2 h-4 w-4" /> Print
+              {selected.size > 0 ? ` (${selected.size})` : ""}
+            </Button>
+            <Button onClick={() => setGenerateOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Generate
+            </Button>
+          </>
         }
       />
+
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <StatCard label="Unused" value={stats?.unused} status="unused" />
@@ -250,6 +280,13 @@ function VouchersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={allSelected}
+                        onCheckedChange={toggleAll}
+                        aria-label="Select all"
+                      />
+                    </TableHead>
                     <TableHead>Code</TableHead>
                     <TableHead>Package</TableHead>
                     <TableHead>Price</TableHead>
@@ -260,7 +297,14 @@ function VouchersPage() {
                 </TableHeader>
                 <TableBody>
                   {filtered.map((v) => (
-                    <TableRow key={v.id}>
+                    <TableRow key={v.id} data-state={selected.has(v.id) ? "selected" : undefined}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selected.has(v.id)}
+                          onCheckedChange={() => toggleOne(v.id)}
+                          aria-label={`Select ${v.code}`}
+                        />
+                      </TableCell>
                       <TableCell>
                         <button
                           onClick={() => copyCode(v.code)}
@@ -285,6 +329,15 @@ function VouchersPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setToPrint([v])}
+                            aria-label="Print voucher"
+                            title="Print card"
+                          >
+                            <Printer className="h-4 w-4 text-muted-foreground" />
+                          </Button>
                           {v.status === "unused" && (
                             <Button
                               variant="ghost"
@@ -340,6 +393,11 @@ function VouchersPage() {
         packages={packages}
       />
       <SellVoucherDialog voucher={selling} onOpenChange={(o) => !o && setSelling(null)} />
+      <PrintVouchersDialog
+        vouchers={toPrint}
+        packages={packages}
+        onOpenChange={(o) => !o && setToPrint(null)}
+      />
 
       <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent>
