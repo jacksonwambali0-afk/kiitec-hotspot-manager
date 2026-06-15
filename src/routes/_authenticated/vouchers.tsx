@@ -24,6 +24,7 @@ import {
 import { PageHeader, RoleGuard } from "@/components/layout/PageParts";
 import { GenerateVouchersDialog } from "@/components/vouchers/GenerateVouchersDialog";
 import { SellVoucherDialog } from "@/components/vouchers/SellVoucherDialog";
+import { PrintVouchersDialog } from "@/components/vouchers/PrintVouchersDialog";
 import type { VoucherRow } from "@/components/vouchers/voucher-types";
 import type { PackageRow } from "@/components/packages/PackageDialog";
 import { Button } from "@/components/ui/button";
