@@ -279,6 +279,13 @@ function VouchersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={allSelected}
+                        onCheckedChange={toggleAll}
+                        aria-label="Select all"
+                      />
+                    </TableHead>
                     <TableHead>Code</TableHead>
                     <TableHead>Package</TableHead>
                     <TableHead>Price</TableHead>
