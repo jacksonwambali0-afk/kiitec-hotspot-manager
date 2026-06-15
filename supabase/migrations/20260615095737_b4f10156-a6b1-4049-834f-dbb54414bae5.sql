@@ -1,0 +1,5 @@
+REVOKE EXECUTE ON FUNCTION public.is_sales_staff(uuid) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.is_sales_staff(uuid) TO authenticated;
+
+REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated;
