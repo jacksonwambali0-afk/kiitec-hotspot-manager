@@ -109,6 +109,8 @@ function VouchersPage() {
   const [generateOpen, setGenerateOpen] = useState(false);
   const [selling, setSelling] = useState<VoucherRow | null>(null);
   const [toDelete, setToDelete] = useState<VoucherRow | null>(null);
+  const [toPrint, setToPrint] = useState<VoucherRow[] | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [packageFilter, setPackageFilter] = useState<string>("all");
