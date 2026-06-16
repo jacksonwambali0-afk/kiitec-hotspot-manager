@@ -1,17 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database, Json } from "@/integrations/supabase/types";
 
-type AuthedSupabase = Parameters<
-  Parameters<ReturnType<typeof requireSupabaseAuth.server>["server"]>[0] extends never
-    ? never
-    : never
->;
+type AuthedSupabase = SupabaseClient<Database>;
 
 /** Throw unless the caller is an admin or technician. */
 async function assertRouterManager(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: AuthedSupabase,
   userId: string,
 ): Promise<void> {
   const [{ data: isAdmin }, { data: isTech }] = await Promise.all([
