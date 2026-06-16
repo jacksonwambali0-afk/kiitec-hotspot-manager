@@ -123,7 +123,7 @@ export const createRouterCommand = createServerFn({ method: "POST" })
       .from("router_commands")
       .insert({
         type: data.type,
-        payload: data.payload as Record<string, unknown>,
+        payload: (data.payload ?? {}) as Json,
         created_by: userId,
       })
       .select("id")
