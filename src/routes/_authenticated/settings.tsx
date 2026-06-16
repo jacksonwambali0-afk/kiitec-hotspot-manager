@@ -111,7 +111,7 @@ function SettingsPage() {
 
   const tokenFn = useServerFn(regenerateConnectorToken);
   const regenerate = useMutation({
-    mutationFn: () => tokenFn({ data: {} }),
+    mutationFn: () => tokenFn(),
     onSuccess: (res: { token: string; hint: string }) => {
       setNewToken(res.token);
       toast.success("New connector token generated.");
