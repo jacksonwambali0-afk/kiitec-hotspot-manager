@@ -24,6 +24,7 @@ import { Route as AuthenticatedPackagesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedLoginPagesRouteImport } from './routes/_authenticated/login-pages'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
+import { Route as ApiPublicConnectorSyncRouteImport } from './routes/api/public/connector/sync'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -99,6 +100,11 @@ const AuthenticatedAuditLogsRoute = AuthenticatedAuditLogsRouteImport.update({
   path: '/audit-logs',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicConnectorSyncRoute = ApiPublicConnectorSyncRouteImport.update({
+  id: '/api/public/connector/sync',
+  path: '/api/public/connector/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/staff': typeof AuthenticatedStaffRoute
   '/vouchers': typeof AuthenticatedVouchersRoute
   '/wireguard': typeof AuthenticatedWireguardRoute
+  '/api/public/connector/sync': typeof ApiPublicConnectorSyncRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/staff': typeof AuthenticatedStaffRoute
   '/vouchers': typeof AuthenticatedVouchersRoute
   '/wireguard': typeof AuthenticatedWireguardRoute
+  '/api/public/connector/sync': typeof ApiPublicConnectorSyncRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -149,6 +157,7 @@ export interface FileRoutesById {
   '/_authenticated/staff': typeof AuthenticatedStaffRoute
   '/_authenticated/vouchers': typeof AuthenticatedVouchersRoute
   '/_authenticated/wireguard': typeof AuthenticatedWireguardRoute
+  '/api/public/connector/sync': typeof ApiPublicConnectorSyncRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/vouchers'
     | '/wireguard'
+    | '/api/public/connector/sync'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/vouchers'
     | '/wireguard'
+    | '/api/public/connector/sync'
   id:
     | '__root__'
     | '/'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/_authenticated/staff'
     | '/_authenticated/vouchers'
     | '/_authenticated/wireguard'
+    | '/api/public/connector/sync'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -207,6 +219,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiPublicConnectorSyncRoute: typeof ApiPublicConnectorSyncRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -316,6 +329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuditLogsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/connector/sync': {
+      id: '/api/public/connector/sync'
+      path: '/api/public/connector/sync'
+      fullPath: '/api/public/connector/sync'
+      preLoaderRoute: typeof ApiPublicConnectorSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -355,6 +375,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiPublicConnectorSyncRoute: ApiPublicConnectorSyncRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
