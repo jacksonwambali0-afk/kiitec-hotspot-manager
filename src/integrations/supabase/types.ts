@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      hotspot_sessions: {
+        Row: {
+          bytes_in: number
+          bytes_out: number
+          created_at: string
+          id: string
+          ip_address: string | null
+          is_active: boolean
+          last_synced_at: string
+          login_at: string | null
+          mac_address: string | null
+          session_key: string
+          uptime_seconds: number | null
+          username: string | null
+          voucher_id: string | null
+        }
+        Insert: {
+          bytes_in?: number
+          bytes_out?: number
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          last_synced_at?: string
+          login_at?: string | null
+          mac_address?: string | null
+          session_key: string
+          uptime_seconds?: number | null
+          username?: string | null
+          voucher_id?: string | null
+        }
+        Update: {
+          bytes_in?: number
+          bytes_out?: number
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          last_synced_at?: string
+          login_at?: string | null
+          mac_address?: string | null
+          session_key?: string
+          uptime_seconds?: number | null
+          username?: string | null
+          voucher_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hotspot_sessions_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       packages: {
         Row: {
           created_at: string
@@ -95,6 +151,135 @@ export type Database = {
           is_active?: boolean
           phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      router_commands: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          payload: Json
+          result: string | null
+          status: Database["public"]["Enums"]["command_status"]
+          type: Database["public"]["Enums"]["command_type"]
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          payload?: Json
+          result?: string | null
+          status?: Database["public"]["Enums"]["command_status"]
+          type: Database["public"]["Enums"]["command_type"]
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          payload?: Json
+          result?: string | null
+          status?: Database["public"]["Enums"]["command_status"]
+          type?: Database["public"]["Enums"]["command_type"]
+        }
+        Relationships: []
+      }
+      router_heartbeats: {
+        Row: {
+          board_name: string | null
+          cpu_load: number | null
+          free_hdd_bytes: number | null
+          free_memory_bytes: number | null
+          hotspot_active_users: number | null
+          id: string
+          os_version: string | null
+          recorded_at: string
+          total_hdd_bytes: number | null
+          total_memory_bytes: number | null
+          uptime: string | null
+          wireguard_connected: boolean | null
+        }
+        Insert: {
+          board_name?: string | null
+          cpu_load?: number | null
+          free_hdd_bytes?: number | null
+          free_memory_bytes?: number | null
+          hotspot_active_users?: number | null
+          id?: string
+          os_version?: string | null
+          recorded_at?: string
+          total_hdd_bytes?: number | null
+          total_memory_bytes?: number | null
+          uptime?: string | null
+          wireguard_connected?: boolean | null
+        }
+        Update: {
+          board_name?: string | null
+          cpu_load?: number | null
+          free_hdd_bytes?: number | null
+          free_memory_bytes?: number | null
+          hotspot_active_users?: number | null
+          id?: string
+          os_version?: string | null
+          recorded_at?: string
+          total_hdd_bytes?: number | null
+          total_memory_bytes?: number | null
+          uptime?: string | null
+          wireguard_connected?: boolean | null
+        }
+        Relationships: []
+      }
+      router_settings: {
+        Row: {
+          api_port: number
+          api_use_tls: boolean
+          connector_token_hash: string | null
+          connector_token_hint: string | null
+          created_at: string
+          host: string | null
+          id: string
+          identity: string | null
+          last_seen_at: string | null
+          name: string
+          notes: string | null
+          updated_at: string
+          wireguard_endpoint: string | null
+          wireguard_peer_public_key: string | null
+        }
+        Insert: {
+          api_port?: number
+          api_use_tls?: boolean
+          connector_token_hash?: string | null
+          connector_token_hint?: string | null
+          created_at?: string
+          host?: string | null
+          id?: string
+          identity?: string | null
+          last_seen_at?: string | null
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          wireguard_endpoint?: string | null
+          wireguard_peer_public_key?: string | null
+        }
+        Update: {
+          api_port?: number
+          api_use_tls?: boolean
+          connector_token_hash?: string | null
+          connector_token_hint?: string | null
+          created_at?: string
+          host?: string | null
+          id?: string
+          identity?: string | null
+          last_seen_at?: string | null
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          wireguard_endpoint?: string | null
+          wireguard_peer_public_key?: string | null
         }
         Relationships: []
       }
@@ -260,6 +445,13 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "cashier" | "technician"
+      command_status: "pending" | "sent" | "done" | "failed"
+      command_type:
+        | "disconnect_session"
+        | "disable_user"
+        | "sync_voucher"
+        | "reboot"
+        | "custom"
       voucher_status:
         | "unused"
         | "sold"
@@ -395,6 +587,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "cashier", "technician"],
+      command_status: ["pending", "sent", "done", "failed"],
+      command_type: [
+        "disconnect_session",
+        "disable_user",
+        "sync_voucher",
+        "reboot",
+        "custom",
+      ],
       voucher_status: [
         "unused",
         "sold",
