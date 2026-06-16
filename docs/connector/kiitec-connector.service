@@ -1,0 +1,16 @@
+[Unit]
+Description=KIITEC Hotspot VPS Connector
+After=network-online.target wg-quick@wg0.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=kiitec
+WorkingDirectory=/opt/kiitec-connector
+EnvironmentFile=/etc/kiitec-connector.env
+ExecStart=/opt/kiitec-connector/venv/bin/python /opt/kiitec-connector/agent.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
