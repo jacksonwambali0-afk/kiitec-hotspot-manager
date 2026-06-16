@@ -94,6 +94,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "KIITEC Hotspot Management System" },
+      { name: "description", content: "Manages MikroTik hotspots, generating and printing vouchers, managing users, and monitoring sessions via a web dashboard." },
+      { property: "og:description", content: "Manages MikroTik hotspots, generating and printing vouchers, managing users, and monitoring sessions via a web dashboard." },
+      { name: "twitter:description", content: "Manages MikroTik hotspots, generating and printing vouchers, managing users, and monitoring sessions via a web dashboard." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ba13699e-6282-45b8-a49a-60ad76d5bc9a/id-preview-108ce11c--be6a0ae4-f47d-4da4-8629-1a423252818a.lovable.app-1781587286089.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ba13699e-6282-45b8-a49a-60ad76d5bc9a/id-preview-108ce11c--be6a0ae4-f47d-4da4-8629-1a423252818a.lovable.app-1781587286089.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
