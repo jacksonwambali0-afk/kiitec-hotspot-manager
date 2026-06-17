@@ -35,7 +35,7 @@ const heartbeatSchema = z.object({
 });
 
 const sessionSchema = z.object({
-  session_key: z.string().min(1).max(200),
+  session_key: z.string().min(1).max(200).nullish(),
   username: z.string().max(120).nullish(),
   ip_address: z.string().max(64).nullish(),
   mac_address: z.string().max(64).nullish(),
@@ -47,7 +47,7 @@ const sessionSchema = z.object({
 
 const bodySchema = z.object({
   heartbeat: heartbeatSchema.nullish(),
-  sessions: z.array(sessionSchema).max(2000).nullish(),
+  sessions: z.union([z.array(sessionSchema).max(2000), z.string()]).nullish(),
   command_results: z
     .array(
       z.object({
@@ -75,7 +75,10 @@ export const Route = createFileRoute("/api/public/connector/sync")({
         if (!parsed.success) {
           return json({ error: "Invalid payload", details: parsed.error.flatten() }, 400);
         }
-        const body = parsed.data;
+        const body = {
+          ...parsed.data,
+          sessions: Array.isArray(parsed.data.sessions) ? parsed.data.sessions : [],
+        };
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const now = new Date().toISOString();
 
@@ -90,11 +93,18 @@ export const Route = createFileRoute("/api/public/connector/sync")({
 
         // 2) Active sessions snapshot (upsert present, deactivate the rest).
         if (body.sessions) {
-          const incomingKeys = new Set(body.sessions.map((s) => s.session_key));
+          const normalizedSessions = body.sessions
+            .map((s) => ({
+              ...s,
+              session_key:
+                s.session_key || [s.username, s.ip_address, s.mac_address].filter(Boolean).join("|"),
+            }))
+            .filter((s) => Boolean(s.session_key));
+          const incomingKeys = new Set(normalizedSessions.map((s) => s.session_key));
 
           // Map usernames -> voucher ids so sessions link to their voucher.
           const usernames = Array.from(
-            new Set(body.sessions.map((s) => s.username).filter(Boolean) as string[]),
+            new Set(normalizedSessions.map((s) => s.username).filter(Boolean) as string[]),
           );
           const voucherMap = new Map<string, string>();
           if (usernames.length) {
@@ -107,9 +117,9 @@ export const Route = createFileRoute("/api/public/connector/sync")({
             }
           }
 
-          if (body.sessions.length) {
-            const rows = body.sessions.map((s) => ({
-              session_key: s.session_key,
+          if (normalizedSessions.length) {
+            const rows = normalizedSessions.map((s) => ({
+              session_key: s.session_key as string,
               username: s.username ?? null,
               ip_address: s.ip_address ?? null,
               mac_address: s.mac_address ?? null,
