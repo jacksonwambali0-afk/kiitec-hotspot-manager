@@ -22,42 +22,42 @@ function json(body: unknown, status = 200): Response {
 }
 
 const heartbeatSchema = z.object({
-  board_name: z.string().max(120).optional(),
-  os_version: z.string().max(60).optional(),
-  uptime: z.string().max(60).optional(),
-  cpu_load: z.number().int().min(0).max(100).optional(),
-  free_memory_bytes: z.number().int().nonnegative().optional(),
-  total_memory_bytes: z.number().int().nonnegative().optional(),
-  free_hdd_bytes: z.number().int().nonnegative().optional(),
-  total_hdd_bytes: z.number().int().nonnegative().optional(),
-  hotspot_active_users: z.number().int().nonnegative().optional(),
-  wireguard_connected: z.boolean().optional(),
+  board_name: z.string().max(120).nullish(),
+  os_version: z.string().max(60).nullish(),
+  uptime: z.string().max(60).nullish(),
+  cpu_load: z.number().int().min(0).max(100).nullish(),
+  free_memory_bytes: z.number().int().nonnegative().nullish(),
+  total_memory_bytes: z.number().int().nonnegative().nullish(),
+  free_hdd_bytes: z.number().int().nonnegative().nullish(),
+  total_hdd_bytes: z.number().int().nonnegative().nullish(),
+  hotspot_active_users: z.number().int().nonnegative().nullish(),
+  wireguard_connected: z.boolean().nullish(),
 });
 
 const sessionSchema = z.object({
   session_key: z.string().min(1).max(200),
-  username: z.string().max(120).optional(),
-  ip_address: z.string().max(64).optional(),
-  mac_address: z.string().max(64).optional(),
-  login_at: z.string().max(40).optional(),
-  uptime_seconds: z.number().int().nonnegative().optional(),
-  bytes_in: z.number().int().nonnegative().optional(),
-  bytes_out: z.number().int().nonnegative().optional(),
+  username: z.string().max(120).nullish(),
+  ip_address: z.string().max(64).nullish(),
+  mac_address: z.string().max(64).nullish(),
+  login_at: z.string().max(40).nullish(),
+  uptime_seconds: z.number().int().nonnegative().nullish(),
+  bytes_in: z.number().int().nonnegative().nullish(),
+  bytes_out: z.number().int().nonnegative().nullish(),
 });
 
 const bodySchema = z.object({
-  heartbeat: heartbeatSchema.optional(),
-  sessions: z.array(sessionSchema).max(2000).optional(),
+  heartbeat: heartbeatSchema.nullish(),
+  sessions: z.array(sessionSchema).max(2000).nullish(),
   command_results: z
     .array(
       z.object({
         id: z.string().uuid(),
         status: z.enum(["done", "failed"]),
-        result: z.string().max(2000).optional(),
+        result: z.string().max(2000).nullish(),
       }),
     )
     .max(200)
-    .optional(),
+    .nullish(),
 });
 
 export const Route = createFileRoute("/api/public/connector/sync")({
