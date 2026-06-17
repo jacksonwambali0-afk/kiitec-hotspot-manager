@@ -98,6 +98,15 @@ def parse_uptime(value):
     return total
 
 
+def clean_payload(value):
+    """Recursively remove None values so the cloud API never receives JSON nulls."""
+    if isinstance(value, dict):
+        return {k: clean_payload(v) for k, v in value.items() if v is not None}
+    if isinstance(value, list):
+        return [clean_payload(item) for item in value]
+    return value
+
+
 # =========================
 # WIREGUARD STATUS
 # =========================
@@ -135,6 +144,16 @@ def collect(api):
     for a in active:
         up = parse_uptime(a.get("uptime"))
         login_at = None
+        session_key = (
+            a.get(".id")
+            or a.get("id")
+            or "|".join(
+                part for part in [a.get("user"), a.get("address"), a.get("mac-address")] if part
+            )
+        )
+        if not session_key:
+            log.warning("Skipping active session with no usable session key: %s", a)
+            continue
         if up:
             login_at = (
                 datetime.fromtimestamp(now - up, tz=timezone.utc)
@@ -143,7 +162,7 @@ def collect(api):
                 .replace("+00:00", "Z")
             )
         sessions.append({
-            "session_key": a.get(".id"),
+            "session_key": session_key,
             "username": a.get("user"),
             "ip_address": a.get("address"),
             "mac_address": a.get("mac-address"),
@@ -212,11 +231,11 @@ def tick():
         heartbeat, sessions = collect(api)
 
         # Flat payload — the sync endpoint reads heartbeat/sessions at top level.
-        payload = {
+        payload = clean_payload({
             "heartbeat": heartbeat,
             "sessions": sessions,
             "command_results": [],
-        }
+        })
 
         r = requests.post(
             SYNC_URL,
