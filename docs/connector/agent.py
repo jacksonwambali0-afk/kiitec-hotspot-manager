@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-KIITEC Hotspot — Render Web Service Connector Agent (FINAL FIXED)
+KIITEC Hotspot — VPS/PC Connector Agent
+Collects full RouterOS telemetry (CPU, RAM, disk, uptime, WireGuard, hotspot
+sessions) and pushes it to the KIITEC dashboard sync endpoint.
 """
 
 import os
@@ -9,6 +11,7 @@ import time
 import logging
 import threading
 import requests
+from datetime import datetime, timezone
 from flask import Flask
 from dotenv import load_dotenv
 
@@ -96,6 +99,25 @@ def parse_uptime(value):
 
 
 # =========================
+# WIREGUARD STATUS
+# =========================
+def wireguard_connected(api):
+    """True if any WireGuard peer handshaked within the last ~3 minutes."""
+    try:
+        peers = api.get_resource("/interface/wireguard/peers").get()
+    except Exception as e:
+        log.warning("WireGuard read failed: %s", e)
+        return None
+
+    for p in peers:
+        handshake = parse_uptime(p.get("last-handshake"))
+        # last-handshake counts UP from the last handshake; small = recent.
+        if handshake and handshake <= 180:
+            return True
+    return False if peers else None
+
+
+# =========================
 # DATA COLLECTION
 # =========================
 def collect(api):
@@ -109,13 +131,24 @@ def collect(api):
         log.warning("Hotspot read failed: %s", e)
         active = []
 
+    now = time.time()
     for a in active:
+        up = parse_uptime(a.get("uptime"))
+        login_at = None
+        if up:
+            login_at = (
+                datetime.fromtimestamp(now - up, tz=timezone.utc)
+                .replace(microsecond=0)
+                .isoformat()
+                .replace("+00:00", "Z")
+            )
         sessions.append({
             "session_key": a.get(".id"),
             "username": a.get("user"),
             "ip_address": a.get("address"),
             "mac_address": a.get("mac-address"),
-            "uptime_seconds": parse_uptime(a.get("uptime")),
+            "login_at": login_at,
+            "uptime_seconds": up,
             "bytes_in": to_int(a.get("bytes-in")),
             "bytes_out": to_int(a.get("bytes-out")),
         })
@@ -125,7 +158,12 @@ def collect(api):
         "os_version": resource.get("version"),
         "uptime": resource.get("uptime"),
         "cpu_load": to_int(resource.get("cpu-load")),
+        "free_memory_bytes": to_int(resource.get("free-memory")),
+        "total_memory_bytes": to_int(resource.get("total-memory")),
+        "free_hdd_bytes": to_int(resource.get("free-hdd-space")),
+        "total_hdd_bytes": to_int(resource.get("total-hdd-space")),
         "hotspot_active_users": len(sessions),
+        "wireguard_connected": wireguard_connected(api),
     }
 
     return heartbeat, sessions
@@ -173,12 +211,10 @@ def tick():
 
         heartbeat, sessions = collect(api)
 
-        # 🔥 FIXED PAYLOAD (Lovable expects this)
+        # Flat payload — the sync endpoint reads heartbeat/sessions at top level.
         payload = {
-            "router": {
-                "heartbeat": heartbeat,
-                "sessions": sessions,
-            },
+            "heartbeat": heartbeat,
+            "sessions": sessions,
             "command_results": [],
         }
 
