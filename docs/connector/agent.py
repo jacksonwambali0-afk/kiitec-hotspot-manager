@@ -209,12 +209,10 @@ def tick():
 
         heartbeat, sessions = collect(api)
 
-        # 🔥 FIXED PAYLOAD (Lovable expects this)
+        # Flat payload — the sync endpoint reads heartbeat/sessions at top level.
         payload = {
-            "router": {
-                "heartbeat": heartbeat,
-                "sessions": sessions,
-            },
+            "heartbeat": heartbeat,
+            "sessions": sessions,
             "command_results": [],
         }
 
