@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-KIITEC Hotspot — Render Web Service Connector Agent (FINAL FIXED)
+KIITEC Hotspot — VPS/PC Connector Agent
+Collects full RouterOS telemetry (CPU, RAM, disk, uptime, WireGuard, hotspot
+sessions) and pushes it to the KIITEC dashboard sync endpoint.
 """
 
 import os
