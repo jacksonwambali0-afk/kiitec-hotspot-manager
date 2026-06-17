@@ -96,6 +96,25 @@ def parse_uptime(value):
 
 
 # =========================
+# WIREGUARD STATUS
+# =========================
+def wireguard_connected(api):
+    """True if any WireGuard peer handshaked within the last ~3 minutes."""
+    try:
+        peers = api.get_resource("/interface/wireguard/peers").get()
+    except Exception as e:
+        log.warning("WireGuard read failed: %s", e)
+        return None
+
+    for p in peers:
+        handshake = parse_uptime(p.get("last-handshake"))
+        # last-handshake counts UP from the last handshake; small = recent.
+        if handshake and handshake <= 180:
+            return True
+    return False if peers else None
+
+
+# =========================
 # DATA COLLECTION
 # =========================
 def collect(api):
@@ -115,17 +134,37 @@ def collect(api):
             "username": a.get("user"),
             "ip_address": a.get("address"),
             "mac_address": a.get("mac-address"),
+            "login_at": a.get("login-by") and None or None,  # placeholder, see below
             "uptime_seconds": parse_uptime(a.get("uptime")),
             "bytes_in": to_int(a.get("bytes-in")),
             "bytes_out": to_int(a.get("bytes-out")),
         })
+
+    # Derive login_at from uptime so the dashboard can show a real timestamp.
+    now = time.time()
+    for s, a in zip(sessions, active):
+        up = parse_uptime(a.get("uptime"))
+        if up:
+            s["login_at"] = (
+                __import__("datetime")
+                .datetime.utcfromtimestamp(now - up)
+                .replace(microsecond=0)
+                .isoformat() + "Z"
+            )
+        else:
+            s["login_at"] = None
 
     heartbeat = {
         "board_name": resource.get("board-name"),
         "os_version": resource.get("version"),
         "uptime": resource.get("uptime"),
         "cpu_load": to_int(resource.get("cpu-load")),
+        "free_memory_bytes": to_int(resource.get("free-memory")),
+        "total_memory_bytes": to_int(resource.get("total-memory")),
+        "free_hdd_bytes": to_int(resource.get("free-hdd-space")),
+        "total_hdd_bytes": to_int(resource.get("total-hdd-space")),
         "hotspot_active_users": len(sessions),
+        "wireguard_connected": wireguard_connected(api),
     }
 
     return heartbeat, sessions
