@@ -99,7 +99,7 @@ export const Route = createFileRoute("/api/public/connector/sync")({
               session_key:
                 s.session_key || [s.username, s.ip_address, s.mac_address].filter(Boolean).join("|"),
             }))
-            .filter((s): s is typeof s & { session_key: string } => Boolean(s.session_key));
+            .filter((s) => Boolean(s.session_key));
           const incomingKeys = new Set(normalizedSessions.map((s) => s.session_key));
 
           // Map usernames -> voucher ids so sessions link to their voucher.
@@ -119,7 +119,7 @@ export const Route = createFileRoute("/api/public/connector/sync")({
 
           if (normalizedSessions.length) {
             const rows = normalizedSessions.map((s) => ({
-              session_key: s.session_key,
+              session_key: s.session_key as string,
               username: s.username ?? null,
               ip_address: s.ip_address ?? null,
               mac_address: s.mac_address ?? null,
