@@ -129,31 +129,27 @@ def collect(api):
         log.warning("Hotspot read failed: %s", e)
         active = []
 
+    now = time.time()
     for a in active:
+        up = parse_uptime(a.get("uptime"))
+        login_at = None
+        if up:
+            login_at = (
+                datetime.fromtimestamp(now - up, tz=timezone.utc)
+                .replace(microsecond=0)
+                .isoformat()
+                .replace("+00:00", "Z")
+            )
         sessions.append({
             "session_key": a.get(".id"),
             "username": a.get("user"),
             "ip_address": a.get("address"),
             "mac_address": a.get("mac-address"),
-            "login_at": a.get("login-by") and None or None,  # placeholder, see below
-            "uptime_seconds": parse_uptime(a.get("uptime")),
+            "login_at": login_at,
+            "uptime_seconds": up,
             "bytes_in": to_int(a.get("bytes-in")),
             "bytes_out": to_int(a.get("bytes-out")),
         })
-
-    # Derive login_at from uptime so the dashboard can show a real timestamp.
-    now = time.time()
-    for s, a in zip(sessions, active):
-        up = parse_uptime(a.get("uptime"))
-        if up:
-            s["login_at"] = (
-                __import__("datetime")
-                .datetime.utcfromtimestamp(now - up)
-                .replace(microsecond=0)
-                .isoformat() + "Z"
-            )
-        else:
-            s["login_at"] = None
 
     heartbeat = {
         "board_name": resource.get("board-name"),
