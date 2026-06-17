@@ -70,7 +70,7 @@ KIITEC_INTERVAL_SECONDS=20
 > Create a dedicated, least-privilege RouterOS user for the API (group with
 > `api`, `read`, `write`, `reboot`, `test` as needed). Do not use `admin`.
 
-### 4. Run as a service
+### 5. Run as a service
 
 ```bash
 sudo cp kiitec-connector.service /etc/systemd/system/
@@ -86,7 +86,7 @@ pages in the dashboard go live.
 
 - The token authenticates the agent to the dashboard; rotate it any time from
   Settings (the old token stops working immediately).
-- RouterOS is reachable only across the WireGuard tunnel — never expose the API
-  port (8728/8729) to the public internet.
+- RouterOS should be reachable only from your trusted LAN or WireGuard tunnel —
+  never expose the API port (8728/8729) to the public internet.
 - The sync endpoint lives under `/api/public/*` and validates the token with a
   timing-safe comparison before doing anything.
