@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Loader2, Ticket } from "lucide-react";
 import { generateVouchers } from "@/lib/vouchers.functions";
+import { fetchAvailableProfiles } from "@/lib/mikrotik-client";
 import { TZS } from "@/lib/voucher-utils";
 import type { PackageRow } from "@/components/packages/PackageDialog";
 import {
@@ -41,8 +42,24 @@ export function GenerateVouchersDialog({
   const [quantity, setQuantity] = useState("10");
   const [prefix, setPrefix] = useState("");
   const [note, setNote] = useState("");
+  const [profile, setProfile] = useState("");
 
   const activePackages = packages.filter((p) => p.is_active);
+
+  const { data: availableProfiles = [] } = useQuery({
+    queryKey: ["mikrotik-profiles"],
+    queryFn: fetchAvailableProfiles,
+  });
+
+  const selected = useMemo(
+    () => packages.find((p) => p.id === packageId) ?? activePackages[0] ?? null,
+    [packageId, packages, activePackages],
+  );
+
+  const defaultProfileForSelectedPackage = useMemo(() => {
+    if (!selected) return "";
+    return selected.mikrotik_profile?.trim() || selected.name || "";
+  }, [selected]);
 
   useEffect(() => {
     if (open) {
@@ -50,11 +67,22 @@ export function GenerateVouchersDialog({
       setQuantity("10");
       setPrefix("");
       setNote("");
+      setProfile(availableProfiles[0] ?? "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, availableProfiles]);
 
-  const selected = packages.find((p) => p.id === packageId);
+  useEffect(() => {
+    if (selected) {
+      const defaultProfile = defaultProfileForSelectedPackage;
+      if (defaultProfile && availableProfiles.includes(defaultProfile)) {
+        setProfile(defaultProfile);
+      } else if (availableProfiles.length > 0 && !profile) {
+        setProfile(availableProfiles[0]);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, availableProfiles]);
 
   const mutation = useMutation({
     mutationFn: async () =>
@@ -64,6 +92,7 @@ export function GenerateVouchersDialog({
           quantity: Number(quantity),
           prefix: prefix.trim(),
           note: note.trim(),
+          profile: profile.trim(),
         },
       }),
     onSuccess: (res) => {
@@ -78,6 +107,7 @@ export function GenerateVouchersDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!packageId) return toast.error("Select a package");
+    if (!profile) return toast.error("Select a MikroTik profile");
     const qty = Number(quantity);
     if (!qty || qty < 1 || qty > 500) return toast.error("Quantity must be between 1 and 500");
     mutation.mutate();
@@ -141,15 +171,37 @@ export function GenerateVouchersDialog({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="note">Batch note</Label>
-              <Textarea
-                id="note"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Optional — e.g. for reseller, event, etc."
-                rows={2}
-              />
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="profile">MikroTik profile</Label>
+                <Select value={profile} onValueChange={setProfile}>
+                  <SelectTrigger id="profile">
+                    <SelectValue placeholder="Select profile" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableProfiles.length > 0 ? (
+                      availableProfiles.map((profileName) => (
+                        <SelectItem key={profileName} value={profileName}>
+                          {profileName}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="">No profiles available</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="note">Batch note</Label>
+                <Textarea
+                  id="note"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Optional — e.g. for reseller, event, etc."
+                  rows={2}
+                />
+              </div>
             </div>
 
             {selected && (

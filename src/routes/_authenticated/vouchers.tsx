@@ -11,6 +11,7 @@ import {
   BadgeDollarSign,
   Printer,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +22,7 @@ import {
   VOUCHER_STATUS_STYLES,
   type VoucherStatus,
 } from "@/lib/voucher-utils";
+import { fetchVouchers as fetchMikrotikVouchers, type Voucher as MikroTikVoucher } from "@/lib/mikrotik-client";
 import { PageHeader, RoleGuard } from "@/components/layout/PageParts";
 import { GenerateVouchersDialog } from "@/components/vouchers/GenerateVouchersDialog";
 import { SellVoucherDialog } from "@/components/vouchers/SellVoucherDialog";
@@ -29,6 +31,7 @@ import type { VoucherRow } from "@/components/vouchers/voucher-types";
 import type { PackageRow } from "@/components/packages/PackageDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -77,6 +80,20 @@ const STATUS_FILTERS: ("all" | VoucherStatus)[] = [
   "disabled",
 ];
 
+type VoucherViewRow = VoucherRow & {
+  liveId: string;
+  username: string;
+  profile: string;
+  disabled: boolean;
+  liveUptime?: string;
+  liveBytesIn?: number;
+  liveBytesOut?: number;
+  livePacketsIn?: number;
+  livePacketsOut?: number;
+  package?: { name: string; duration_minutes: number } | null;
+  package_id: string | null;
+};
+
 async function fetchPackages(): Promise<PackageRow[]> {
   const { data, error } = await supabase
     .from("packages")
@@ -88,19 +105,67 @@ async function fetchPackages(): Promise<PackageRow[]> {
   return (data ?? []) as PackageRow[];
 }
 
-async function fetchVouchers(status: string, packageId: string): Promise<VoucherRow[]> {
-  let query = supabase
-    .from("vouchers")
-    .select(
-      "id, code, username, password, status, price, package_id, batch_id, sold_at, buyer_name, buyer_phone, expires_at, bound_mac, comment, created_at, package:packages(name, duration_minutes)",
-    )
-    .order("created_at", { ascending: false })
-    .limit(500);
-  if (status !== "all") query = query.eq("status", status as VoucherStatus);
-  if (packageId !== "all") query = query.eq("package_id", packageId);
-  const { data, error } = await query;
-  if (error) throw error;
-  return (data ?? []) as unknown as VoucherRow[];
+async function fetchVouchers(status: string, packageId: string): Promise<VoucherViewRow[]> {
+  try {
+    console.log("[fetchVouchers] Fetching live MikroTik vouchers");
+    const [liveVouchers, packagesMeta] = await Promise.all([
+      fetchMikrotikVouchers(),
+      supabase
+        .from("packages")
+        .select("id, name, duration_minutes, mikrotik_profile, period_mode")
+        .order("name"),
+    ]);
+
+    const packageMeta = (packagesMeta.data ?? []) as PackageRow[];
+
+    // Fetch DB vouchers for any live usernames so we can merge activation/expires data
+    const liveNames = (liveVouchers || []).map((v) => v.name).filter(Boolean);
+    const { data: dbVouchers = [] } = liveNames.length
+      ? await supabase.from("vouchers").select("id, username, price, status, sold_at, buyer_name, buyer_phone, activated_at, expires_at, package_id").in("username", liveNames)
+      : { data: [] };
+
+    const dbByUsername = new Map<string, any>();
+    (dbVouchers || []).forEach((d: any) => dbByUsername.set(d.username, d));
+
+    return (liveVouchers || []).map((live) => {
+      const matchedPackage = packageMeta.find(
+        (pkg) => pkg.mikrotik_profile === live.profile || pkg.name === live.profile,
+      );
+
+      const db = dbByUsername.get(live.name);
+
+      return {
+        id: db?.id ?? live.id,
+        liveId: live.id,
+        code: live.name,
+        username: live.name,
+        password: "",
+        status: db?.status ?? (live.disabled ? "disabled" : "unused"),
+        price: db?.price ?? matchedPackage?.price ?? 0,
+        package_id: db?.package_id ?? matchedPackage?.id ?? null,
+        batch_id: null,
+        sold_at: db?.sold_at ?? null,
+        buyer_name: db?.buyer_name ?? null,
+        buyer_phone: db?.buyer_phone ?? null,
+        expires_at: db?.expires_at ?? null,
+        activated_at: db?.activated_at ?? null,
+        bound_mac: null,
+        comment: null,
+        created_at: new Date().toISOString(),
+        profile: live.profile,
+        disabled: live.disabled ?? false,
+        liveUptime: live.uptime,
+        liveBytesIn: live.bytesIn,
+        liveBytesOut: live.bytesOut,
+        livePacketsIn: live.packetsIn,
+        livePacketsOut: live.packetsOut,
+        package: matchedPackage ? { name: matchedPackage.name, duration_minutes: matchedPackage.duration_minutes } : null,
+      } as VoucherViewRow;
+    });
+  } catch (err) {
+    console.error("[fetchVouchers] Unexpected error:", err);
+    throw err;
+  }
 }
 
 function VouchersPage() {
@@ -115,32 +180,47 @@ function VouchersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [packageFilter, setPackageFilter] = useState<string>("all");
 
-  const { data: packages = [] } = useQuery({ queryKey: ["packages"], queryFn: fetchPackages });
+  const { data: packages = [], error: packagesError } = useQuery({ queryKey: ["packages"], queryFn: fetchPackages });
 
-  const { data: vouchers, isLoading } = useQuery({
+  const { data: vouchers, isLoading, error: vouchersError } = useQuery<VoucherViewRow[]>({
     queryKey: ["vouchers", statusFilter, packageFilter],
     queryFn: () => fetchVouchers(statusFilter, packageFilter),
   });
 
-  const { data: stats } = useQuery({
+  const { data: stats, error: statsError } = useQuery({
     queryKey: ["voucher-stats"],
     queryFn: async () => {
-      const statuses: VoucherStatus[] = ["unused", "sold", "active", "used", "expired"];
-      const counts = await Promise.all(
-        statuses.map(async (s) => {
-          const { count } = await supabase
-            .from("vouchers")
-            .select("*", { count: "exact", head: true })
-            .eq("status", s);
-          return [s, count ?? 0] as const;
-        }),
-      );
-      return Object.fromEntries(counts) as Record<VoucherStatus, number>;
+      try {
+        console.log("[fetchVoucherStats] Starting stats query");
+        const statuses: VoucherStatus[] = ["unused", "sold", "active", "used", "expired"];
+        const counts = await Promise.all(
+          statuses.map(async (s) => {
+            const { count, error } = await supabase
+              .from("vouchers")
+              .select("*", { count: "exact", head: true })
+              .eq("status", s);
+            if (error) {
+              console.error("[fetchVoucherStats] Error counting status", s, ":", error);
+              throw error;
+            }
+            return [s, count ?? 0] as const;
+          }),
+        );
+        console.log("[fetchVoucherStats] Success");
+        return Object.fromEntries(counts) as Record<VoucherStatus, number>;
+      } catch (err) {
+        console.error("[fetchVoucherStats] Failed:", err);
+        throw err;
+      }
     },
   });
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: VoucherStatus }) => {
+    mutationFn: async ({ id, status, username }: { id: string; status: VoucherStatus; username?: string }) => {
+      if (status === "disabled" && username) {
+        const { updateVoucher } = await import("@/lib/mikrotik-client");
+        await updateVoucher({ username }, { disabled: true });
+      }
       const { error } = await supabase.from("vouchers").update({ status }).eq("id", id);
       if (error) throw error;
     },
@@ -153,7 +233,11 @@ function VouchersPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, username }: { id: string; username?: string }) => {
+      if (username) {
+        const { deleteVoucher } = await import("@/lib/mikrotik-client");
+        await deleteVoucher({ username });
+      }
       const { error } = await supabase.from("vouchers").delete().eq("id", id);
       if (error) throw error;
     },
@@ -218,6 +302,19 @@ function VouchersPage() {
           </>
         }
       />
+
+      {(vouchersError || packagesError || statsError) && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error loading data</AlertTitle>
+          <AlertDescription>
+            {vouchersError instanceof Error && `Vouchers: ${vouchersError.message}`}
+            {packagesError instanceof Error && `Packages: ${packagesError.message}`}
+            {statsError instanceof Error && `Stats: ${statsError.message}`}
+            {!vouchersError && !packagesError && !statsError && "Failed to load voucher data"}
+          </AlertDescription>
+        </Alert>
+      )}
 
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -290,6 +387,8 @@ function VouchersPage() {
                     <TableHead>Code</TableHead>
                     <TableHead>Package</TableHead>
                     <TableHead>Price</TableHead>
+                    <TableHead>Activated</TableHead>
+                    <TableHead>Expires</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Buyer</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -317,6 +416,12 @@ function VouchersPage() {
                       </TableCell>
                       <TableCell className="text-sm">{v.package?.name ?? "—"}</TableCell>
                       <TableCell className="font-medium">{TZS(v.price)}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {v.activated_at ? new Date(v.activated_at).toLocaleString() : "—"}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {v.expires_at ? new Date(v.expires_at).toLocaleString() : "—"}
+                      </TableCell>
                       <TableCell>
                         <span
                           className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${VOUCHER_STATUS_STYLES[v.status]}`}
@@ -353,7 +458,7 @@ function VouchersPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => updateStatus.mutate({ id: v.id, status: "disabled" })}
+                              onClick={() => updateStatus.mutate({ id: v.id, status: "disabled", username: v.username })}
                               aria-label="Disable voucher"
                               title="Disable"
                             >
@@ -410,7 +515,10 @@ function VouchersPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => toDelete && deleteMutation.mutate(toDelete.id)}
+              onClick={() =>
+                toDelete &&
+                deleteMutation.mutate({ id: toDelete.id, username: toDelete.username })
+              }
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

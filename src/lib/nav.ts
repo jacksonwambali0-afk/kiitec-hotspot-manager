@@ -10,6 +10,7 @@ import {
   ScrollText,
   Palette,
   Settings,
+  Bug,
   type LucideIcon,
 } from "lucide-react";
 import type { AppRole } from "./auth-context";
@@ -36,10 +37,11 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/router", label: "Router Monitor", icon: Wifi, roles: ["admin", "technician"], group: "Network" },
   { to: "/wireguard", label: "WireGuard", icon: ShieldCheck, roles: ["admin", "technician"], group: "Network" },
   { to: "/reports", label: "Reports", icon: BarChart3, roles: ["admin", "cashier"], group: "Insights" },
-  { to: "/staff", label: "Staff Accounts", icon: Users, roles: ["admin"], group: "Administration" },
+  { to: "/users", label: "Users", icon: Users, roles: ["admin"], group: "Administration" },
   { to: "/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["admin"], group: "Administration" },
   { to: "/login-pages", label: "Login Pages", icon: Palette, roles: ["admin"], group: "Administration" },
   { to: "/settings", label: "Settings", icon: Settings, roles: ["admin"], group: "Administration" },
+  { to: "/diagnostics", label: "Diagnostics", icon: Bug, roles: ["admin"], group: "Administration" },
 ];
 
 export const NAV_GROUPS: NavItem["group"][] = [

@@ -14,6 +14,7 @@ const generateSchema = z.object({
     .optional()
     .default(""),
   note: z.string().trim().max(200).optional().default(""),
+  profile: z.string().trim().min(1, "Select a MikroTik profile"),
 });
 
 /**
@@ -22,7 +23,7 @@ const generateSchema = z.object({
  */
 export const generateVouchers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => generateSchema.parse(data))
+  .validator((data: unknown) => generateSchema.parse(data))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
@@ -80,17 +81,44 @@ export const generateVouchers = createServerFn({ method: "POST" })
 
     // Insert in chunks; retry codes that collide with existing rows.
     let inserted = 0;
+    const createdUsernames: string[] = [];
+
+    const { createVoucher, deleteVoucher } = await import("@/lib/mikrotik-api.server");
+
     for (let i = 0; i < rows.length; i += 100) {
       const chunk = rows.slice(i, i + 100);
       const { error: insertError, count } = await supabase
         .from("vouchers")
         .insert(chunk, { count: "exact" });
       if (insertError) {
-        // Roll back the empty batch if nothing inserted at all.
         if (inserted === 0) await supabase.from("voucher_batches").delete().eq("id", batch.id);
         throw insertError;
       }
       inserted += count ?? chunk.length;
+
+      for (const row of chunk) {
+        try {
+          await createVoucher({
+            name: row.username,
+            password: row.password,
+            profile: data.profile,
+            comment: data.note || undefined,
+          });
+          createdUsernames.push(row.username);
+        } catch (mikrotikError) {
+          // Roll back inserted rows and any created MikroTik users.
+          await supabase.from("vouchers").delete().eq("batch_id", batch.id);
+          await supabase.from("voucher_batches").delete().eq("id", batch.id);
+          for (const username of createdUsernames) {
+            try {
+              await deleteVoucher({ name: username });
+            } catch {
+              // best effort only
+            }
+          }
+          throw mikrotikError;
+        }
+      }
     }
 
     return { batchId: batch.id, count: inserted, packageName: pkg.name };

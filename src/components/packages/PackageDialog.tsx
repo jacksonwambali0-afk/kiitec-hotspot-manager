@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { createPackage as createMikrotikPackage, updatePackage as updateMikrotikPackage } from "@/lib/mikrotik-client";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,7 @@ export interface PackageRow {
   device_limit: number;
   mikrotik_profile: string | null;
   is_active: boolean;
+  period_mode?: "rolling" | "calendar_day" | "calendar_week" | "calendar_month" | null;
 }
 
 const DURATION_PRESETS = [
@@ -60,6 +62,7 @@ interface FormState {
   device_limit: string;
   mikrotik_profile: string;
   is_active: boolean;
+  period_mode: string;
 }
 
 const emptyForm: FormState = {
@@ -73,6 +76,7 @@ const emptyForm: FormState = {
   device_limit: "1",
   mikrotik_profile: "",
   is_active: true,
+  period_mode: "rolling",
 };
 
 function toForm(pkg: PackageRow): FormState {
@@ -87,6 +91,7 @@ function toForm(pkg: PackageRow): FormState {
     device_limit: String(pkg.device_limit ?? 1),
     mikrotik_profile: pkg.mikrotik_profile ?? "",
     is_active: pkg.is_active,
+    period_mode: pkg.period_mode ?? "rolling",
   };
 }
 
@@ -112,8 +117,12 @@ export function PackageDialog({
 
   const mutation = useMutation({
     mutationFn: async () => {
+      const packageName = form.name.trim();
+      const suppliedProfile = form.mikrotik_profile.trim();
+      const profileName = suppliedProfile || packageName;
+
       const payload = {
-        name: form.name.trim(),
+        name: packageName,
         description: form.description.trim() || null,
         price: Number(form.price) || 0,
         duration_minutes: Number(form.duration_minutes) || 0,
@@ -121,9 +130,35 @@ export function PackageDialog({
         speed_up_kbps: form.speed_up_kbps ? Number(form.speed_up_kbps) : null,
         data_limit_mb: form.data_limit_mb ? Number(form.data_limit_mb) : null,
         device_limit: Number(form.device_limit) || 1,
-        mikrotik_profile: form.mikrotik_profile.trim() || null,
+        mikrotik_profile: profileName,
+        period_mode: form.period_mode || "rolling",
         is_active: form.is_active,
       };
+
+      const currentProfileName = editing?.mikrotik_profile?.trim() ?? "";
+      const profileParams = {
+        name: profileName,
+        sessionTime: `${form.duration_minutes}m`,
+        rateLimit:
+          form.speed_down_kbps || form.speed_up_kbps
+            ? `${form.speed_down_kbps || 0}k/${form.speed_up_kbps || 0}k`
+            : undefined,
+        sharedUsers: Number(form.device_limit) || undefined,
+      };
+
+      if (profileName) {
+        if (editing && currentProfileName && currentProfileName !== profileName) {
+          await updateMikrotikPackage(
+            { name: currentProfileName },
+            { ...profileParams, name: profileName },
+          );
+        } else if (editing && currentProfileName) {
+          await updateMikrotikPackage({ name: currentProfileName }, profileParams);
+        } else {
+          await createMikrotikPackage(profileParams);
+        }
+      }
+
       if (editing) {
         const { error } = await supabase.from("packages").update(payload).eq("id", editing.id);
         if (error) throw error;
@@ -293,6 +328,21 @@ export function PackageDialog({
               onChange={(e) => set("mikrotik_profile", e.target.value)}
               placeholder="e.g. 1day-profile"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="period_mode">Validity mode</Label>
+            <Select value={form.period_mode} onValueChange={(v) => set("period_mode", v)}>
+              <SelectTrigger id="period_mode">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="rolling">Rolling (starts at first login)</SelectItem>
+                <SelectItem value="calendar_day">Calendar day (ends at end of day)</SelectItem>
+                <SelectItem value="calendar_week">Calendar week (ends on Sunday)</SelectItem>
+                <SelectItem value="calendar_month">Calendar month (ends last day)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-border p-3">

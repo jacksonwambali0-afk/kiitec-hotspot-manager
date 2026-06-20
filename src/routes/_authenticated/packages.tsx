@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Package as PackageIcon, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Package as PackageIcon, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { TZS, formatDuration, formatSpeed, formatData } from "@/lib/voucher-utils";
+import { fetchPackages as fetchMikrotikPackages, type Package as MikroTikPackage } from "@/lib/mikrotik-client";
 import { PageHeader, RoleGuard } from "@/components/layout/PageParts";
 import { PackageDialog, type PackageRow } from "@/components/packages/PackageDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
   TableBody,
@@ -40,15 +42,66 @@ export const Route = createFileRoute("/_authenticated/packages")({
   ),
 });
 
-async function fetchPackages(): Promise<PackageRow[]> {
-  const { data, error } = await supabase
-    .from("packages")
-    .select(
-      "id, name, description, price, duration_minutes, speed_down_kbps, speed_up_kbps, data_limit_mb, device_limit, mikrotik_profile, is_active",
-    )
-    .order("price", { ascending: true });
-  if (error) throw error;
-  return (data ?? []) as PackageRow[];
+type PackageViewRow = PackageRow & {
+  liveId: string;
+  liveSessionTime?: number;
+  liveRateLimit?: string;
+  liveSharedUsers?: number;
+  hasSupabaseMeta: boolean;
+  supabaseId?: string;
+};
+
+async function fetchPackages(): Promise<PackageViewRow[]> {
+  try {
+    console.log("[fetchPackages] Fetching live MikroTik packages");
+    const [livePackages, metaResult] = await Promise.all([
+      fetchMikrotikPackages(),
+      supabase
+        .from("packages")
+        .select(
+          "id, name, description, price, duration_minutes, speed_down_kbps, speed_up_kbps, data_limit_mb, device_limit, mikrotik_profile, is_active",
+        )
+        .order("price", { ascending: true }),
+    ]);
+
+    if (metaResult.error) {
+      console.error("[fetchPackages] Supabase metadata error:", metaResult.error);
+      throw new Error(`Failed to fetch package metadata: ${metaResult.error.message}`);
+    }
+
+    const metadata = (metaResult.data ?? []) as PackageRow[];
+
+    return livePackages.map((live) => {
+      const match = metadata.find(
+        (pkg) => pkg.mikrotik_profile === live.name || pkg.name === live.name,
+      );
+      const [downLimit, upLimit] = live.rateLimit?.split("/") ?? [];
+      return {
+        id: match?.id ?? live.id,
+        supabaseId: match?.id,
+        hasSupabaseMeta: !!match,
+        name: live.name,
+        description: match?.description ?? null,
+        price: match?.price ?? 0,
+        duration_minutes: match?.duration_minutes ?? Math.round((live.sessionTime ?? 0) / 60),
+        speed_down_kbps: match?.speed_down_kbps ??
+          (downLimit ? Number(downLimit.replace(/k$/i, "")) : null),
+        speed_up_kbps: match?.speed_up_kbps ??
+          (upLimit ? Number(upLimit.replace(/k$/i, "")) : null),
+        data_limit_mb: match?.data_limit_mb ?? null,
+        device_limit: match?.device_limit ?? live.sharedUsers ?? 1,
+        mikrotik_profile: live.name,
+        is_active: match?.is_active ?? true,
+        liveId: live.id,
+        liveSessionTime: live.sessionTime,
+        liveRateLimit: live.rateLimit,
+        liveSharedUsers: live.sharedUsers,
+      };
+    });
+  } catch (err) {
+    console.error("[fetchPackages] Unexpected error:", err);
+    throw err;
+  }
 }
 
 function PackagesPage() {
@@ -56,17 +109,23 @@ function PackagesPage() {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<PackageRow | null>(null);
-  const [toDelete, setToDelete] = useState<PackageRow | null>(null);
+  const [toDelete, setToDelete] = useState<PackageViewRow | null>(null);
 
-  const { data: packages, isLoading } = useQuery({
+  const { data: packages, isLoading, error } = useQuery<PackageViewRow[]>({
     queryKey: ["packages"],
     queryFn: fetchPackages,
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("packages").delete().eq("id", id);
-      if (error) throw error;
+    mutationFn: async (pkg: PackageViewRow) => {
+      if (pkg.mikrotik_profile) {
+        const { deletePackage } = await import("@/lib/mikrotik-client");
+        await deletePackage({ profileName: pkg.mikrotik_profile });
+      }
+      if (pkg.supabaseId) {
+        const { error } = await supabase.from("packages").delete().eq("id", pkg.supabaseId);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["packages"] });
@@ -96,6 +155,16 @@ function PackagesPage() {
           </Button>
         }
       />
+
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error loading packages</AlertTitle>
+          <AlertDescription>
+            {error instanceof Error ? error.message : "Failed to fetch packages from database"}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Card className="shadow-card">
         <CardContent className="p-0">
@@ -190,7 +259,7 @@ function PackagesPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => toDelete && deleteMutation.mutate(toDelete.id)}
+              onClick={() => toDelete && deleteMutation.mutate(toDelete)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

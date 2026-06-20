@@ -22,8 +22,15 @@ import { Route as AuthenticatedRouterRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedPackagesRouteImport } from './routes/_authenticated/packages'
 import { Route as AuthenticatedLoginPagesRouteImport } from './routes/_authenticated/login-pages'
+import { Route as AuthenticatedDiagnosticsRouteImport } from './routes/_authenticated/diagnostics'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
+import { Route as ApiMikrotikVouchersRouteImport } from './routes/api/mikrotik/vouchers'
+import { Route as ApiMikrotikStatsRouteImport } from './routes/api/mikrotik/stats'
+import { Route as ApiMikrotikPackagesRouteImport } from './routes/api/mikrotik/packages'
+import { Route as ApiMikrotikOnlineDevicesRouteImport } from './routes/api/mikrotik/online-devices'
+import { Route as ApiMikrotikActiveSessionsRouteImport } from './routes/api/mikrotik/active-sessions'
+import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated/admin/roles'
 import { Route as ApiPublicConnectorSyncRouteImport } from './routes/api/public/connector/sync'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -56,8 +63,8 @@ const AuthenticatedVouchersRoute = AuthenticatedVouchersRouteImport.update({
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
-  id: '/staff',
-  path: '/staff',
+  id: '/users',
+  path: '/users',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -90,6 +97,12 @@ const AuthenticatedLoginPagesRoute = AuthenticatedLoginPagesRouteImport.update({
   path: '/login-pages',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDiagnosticsRoute =
+  AuthenticatedDiagnosticsRouteImport.update({
+    id: '/diagnostics',
+    path: '/diagnostics',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -98,6 +111,38 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedAuditLogsRoute = AuthenticatedAuditLogsRouteImport.update({
   id: '/audit-logs',
   path: '/audit-logs',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiMikrotikVouchersRoute = ApiMikrotikVouchersRouteImport.update({
+  id: '/api/mikrotik/vouchers',
+  path: '/api/mikrotik/vouchers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMikrotikStatsRoute = ApiMikrotikStatsRouteImport.update({
+  id: '/api/mikrotik/stats',
+  path: '/api/mikrotik/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMikrotikPackagesRoute = ApiMikrotikPackagesRouteImport.update({
+  id: '/api/mikrotik/packages',
+  path: '/api/mikrotik/packages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMikrotikOnlineDevicesRoute =
+  ApiMikrotikOnlineDevicesRouteImport.update({
+    id: '/api/mikrotik/online-devices',
+    path: '/api/mikrotik/online-devices',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiMikrotikActiveSessionsRoute =
+  ApiMikrotikActiveSessionsRouteImport.update({
+    id: '/api/mikrotik/active-sessions',
+    path: '/api/mikrotik/active-sessions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedAdminRolesRoute = AuthenticatedAdminRolesRouteImport.update({
+  id: '/admin/roles',
+  path: '/admin/roles',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPublicConnectorSyncRoute = ApiPublicConnectorSyncRouteImport.update({
@@ -112,15 +157,22 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/login-pages': typeof AuthenticatedLoginPagesRoute
   '/packages': typeof AuthenticatedPackagesRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/router': typeof AuthenticatedRouterRoute
   '/sessions': typeof AuthenticatedSessionsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/staff': typeof AuthenticatedStaffRoute
+  '/users': typeof AuthenticatedStaffRoute
   '/vouchers': typeof AuthenticatedVouchersRoute
   '/wireguard': typeof AuthenticatedWireguardRoute
+  '/admin/roles': typeof AuthenticatedAdminRolesRoute
+  '/api/mikrotik/active-sessions': typeof ApiMikrotikActiveSessionsRoute
+  '/api/mikrotik/online-devices': typeof ApiMikrotikOnlineDevicesRoute
+  '/api/mikrotik/packages': typeof ApiMikrotikPackagesRoute
+  '/api/mikrotik/stats': typeof ApiMikrotikStatsRoute
+  '/api/mikrotik/vouchers': typeof ApiMikrotikVouchersRoute
   '/api/public/connector/sync': typeof ApiPublicConnectorSyncRoute
 }
 export interface FileRoutesByTo {
@@ -129,15 +181,22 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/login-pages': typeof AuthenticatedLoginPagesRoute
   '/packages': typeof AuthenticatedPackagesRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/router': typeof AuthenticatedRouterRoute
   '/sessions': typeof AuthenticatedSessionsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/staff': typeof AuthenticatedStaffRoute
+  '/users': typeof AuthenticatedStaffRoute
   '/vouchers': typeof AuthenticatedVouchersRoute
   '/wireguard': typeof AuthenticatedWireguardRoute
+  '/admin/roles': typeof AuthenticatedAdminRolesRoute
+  '/api/mikrotik/active-sessions': typeof ApiMikrotikActiveSessionsRoute
+  '/api/mikrotik/online-devices': typeof ApiMikrotikOnlineDevicesRoute
+  '/api/mikrotik/packages': typeof ApiMikrotikPackagesRoute
+  '/api/mikrotik/stats': typeof ApiMikrotikStatsRoute
+  '/api/mikrotik/vouchers': typeof ApiMikrotikVouchersRoute
   '/api/public/connector/sync': typeof ApiPublicConnectorSyncRoute
 }
 export interface FileRoutesById {
@@ -148,6 +207,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/_authenticated/login-pages': typeof AuthenticatedLoginPagesRoute
   '/_authenticated/packages': typeof AuthenticatedPackagesRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -157,6 +217,12 @@ export interface FileRoutesById {
   '/_authenticated/staff': typeof AuthenticatedStaffRoute
   '/_authenticated/vouchers': typeof AuthenticatedVouchersRoute
   '/_authenticated/wireguard': typeof AuthenticatedWireguardRoute
+  '/_authenticated/admin/roles': typeof AuthenticatedAdminRolesRoute
+  '/api/mikrotik/active-sessions': typeof ApiMikrotikActiveSessionsRoute
+  '/api/mikrotik/online-devices': typeof ApiMikrotikOnlineDevicesRoute
+  '/api/mikrotik/packages': typeof ApiMikrotikPackagesRoute
+  '/api/mikrotik/stats': typeof ApiMikrotikStatsRoute
+  '/api/mikrotik/vouchers': typeof ApiMikrotikVouchersRoute
   '/api/public/connector/sync': typeof ApiPublicConnectorSyncRoute
 }
 export interface FileRouteTypes {
@@ -167,15 +233,22 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/audit-logs'
     | '/dashboard'
+    | '/diagnostics'
     | '/login-pages'
     | '/packages'
     | '/reports'
     | '/router'
     | '/sessions'
     | '/settings'
-    | '/staff'
+    | '/users'
     | '/vouchers'
     | '/wireguard'
+    | '/admin/roles'
+    | '/api/mikrotik/active-sessions'
+    | '/api/mikrotik/online-devices'
+    | '/api/mikrotik/packages'
+    | '/api/mikrotik/stats'
+    | '/api/mikrotik/vouchers'
     | '/api/public/connector/sync'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -184,15 +257,22 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/audit-logs'
     | '/dashboard'
+    | '/diagnostics'
     | '/login-pages'
     | '/packages'
     | '/reports'
     | '/router'
     | '/sessions'
     | '/settings'
-    | '/staff'
+    | '/users'
     | '/vouchers'
     | '/wireguard'
+    | '/admin/roles'
+    | '/api/mikrotik/active-sessions'
+    | '/api/mikrotik/online-devices'
+    | '/api/mikrotik/packages'
+    | '/api/mikrotik/stats'
+    | '/api/mikrotik/vouchers'
     | '/api/public/connector/sync'
   id:
     | '__root__'
@@ -202,6 +282,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_authenticated/audit-logs'
     | '/_authenticated/dashboard'
+    | '/_authenticated/diagnostics'
     | '/_authenticated/login-pages'
     | '/_authenticated/packages'
     | '/_authenticated/reports'
@@ -211,6 +292,12 @@ export interface FileRouteTypes {
     | '/_authenticated/staff'
     | '/_authenticated/vouchers'
     | '/_authenticated/wireguard'
+    | '/_authenticated/admin/roles'
+    | '/api/mikrotik/active-sessions'
+    | '/api/mikrotik/online-devices'
+    | '/api/mikrotik/packages'
+    | '/api/mikrotik/stats'
+    | '/api/mikrotik/vouchers'
     | '/api/public/connector/sync'
   fileRoutesById: FileRoutesById
 }
@@ -219,6 +306,11 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiMikrotikActiveSessionsRoute: typeof ApiMikrotikActiveSessionsRoute
+  ApiMikrotikOnlineDevicesRoute: typeof ApiMikrotikOnlineDevicesRoute
+  ApiMikrotikPackagesRoute: typeof ApiMikrotikPackagesRoute
+  ApiMikrotikStatsRoute: typeof ApiMikrotikStatsRoute
+  ApiMikrotikVouchersRoute: typeof ApiMikrotikVouchersRoute
   ApiPublicConnectorSyncRoute: typeof ApiPublicConnectorSyncRoute
 }
 
@@ -268,8 +360,8 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/staff': {
       id: '/_authenticated/staff'
-      path: '/staff'
-      fullPath: '/staff'
+      path: '/users'
+      fullPath: '/users'
       preLoaderRoute: typeof AuthenticatedStaffRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
@@ -315,6 +407,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLoginPagesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/diagnostics': {
+      id: '/_authenticated/diagnostics'
+      path: '/diagnostics'
+      fullPath: '/diagnostics'
+      preLoaderRoute: typeof AuthenticatedDiagnosticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -327,6 +426,48 @@ declare module '@tanstack/react-router' {
       path: '/audit-logs'
       fullPath: '/audit-logs'
       preLoaderRoute: typeof AuthenticatedAuditLogsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/mikrotik/vouchers': {
+      id: '/api/mikrotik/vouchers'
+      path: '/api/mikrotik/vouchers'
+      fullPath: '/api/mikrotik/vouchers'
+      preLoaderRoute: typeof ApiMikrotikVouchersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mikrotik/stats': {
+      id: '/api/mikrotik/stats'
+      path: '/api/mikrotik/stats'
+      fullPath: '/api/mikrotik/stats'
+      preLoaderRoute: typeof ApiMikrotikStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mikrotik/packages': {
+      id: '/api/mikrotik/packages'
+      path: '/api/mikrotik/packages'
+      fullPath: '/api/mikrotik/packages'
+      preLoaderRoute: typeof ApiMikrotikPackagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mikrotik/online-devices': {
+      id: '/api/mikrotik/online-devices'
+      path: '/api/mikrotik/online-devices'
+      fullPath: '/api/mikrotik/online-devices'
+      preLoaderRoute: typeof ApiMikrotikOnlineDevicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mikrotik/active-sessions': {
+      id: '/api/mikrotik/active-sessions'
+      path: '/api/mikrotik/active-sessions'
+      fullPath: '/api/mikrotik/active-sessions'
+      preLoaderRoute: typeof ApiMikrotikActiveSessionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin/roles': {
+      id: '/_authenticated/admin/roles'
+      path: '/admin/roles'
+      fullPath: '/admin/roles'
+      preLoaderRoute: typeof AuthenticatedAdminRolesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/connector/sync': {
@@ -342,6 +483,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDiagnosticsRoute: typeof AuthenticatedDiagnosticsRoute
   AuthenticatedLoginPagesRoute: typeof AuthenticatedLoginPagesRoute
   AuthenticatedPackagesRoute: typeof AuthenticatedPackagesRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -351,11 +493,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRoute
   AuthenticatedVouchersRoute: typeof AuthenticatedVouchersRoute
   AuthenticatedWireguardRoute: typeof AuthenticatedWireguardRoute
+  AuthenticatedAdminRolesRoute: typeof AuthenticatedAdminRolesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDiagnosticsRoute: AuthenticatedDiagnosticsRoute,
   AuthenticatedLoginPagesRoute: AuthenticatedLoginPagesRoute,
   AuthenticatedPackagesRoute: AuthenticatedPackagesRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
@@ -365,6 +509,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStaffRoute: AuthenticatedStaffRoute,
   AuthenticatedVouchersRoute: AuthenticatedVouchersRoute,
   AuthenticatedWireguardRoute: AuthenticatedWireguardRoute,
+  AuthenticatedAdminRolesRoute: AuthenticatedAdminRolesRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -375,8 +520,23 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiMikrotikActiveSessionsRoute: ApiMikrotikActiveSessionsRoute,
+  ApiMikrotikOnlineDevicesRoute: ApiMikrotikOnlineDevicesRoute,
+  ApiMikrotikPackagesRoute: ApiMikrotikPackagesRoute,
+  ApiMikrotikStatsRoute: ApiMikrotikStatsRoute,
+  ApiMikrotikVouchersRoute: ApiMikrotikVouchersRoute,
   ApiPublicConnectorSyncRoute: ApiPublicConnectorSyncRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
