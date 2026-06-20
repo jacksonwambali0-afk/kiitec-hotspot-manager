@@ -114,7 +114,8 @@ async function createMikroTikConnection() {
 
   let RouterOS: any;
   try {
-    RouterOS = await import("routeros");
+    const routerosModule = "routeros";
+    RouterOS = await import(/* @vite-ignore */ routerosModule);
   } catch (e) {
     console.warn("[MikroTik] routeros import failed:", e instanceof Error ? e.message : String(e));
     return null;

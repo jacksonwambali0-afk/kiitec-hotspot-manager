@@ -39,7 +39,15 @@ function RolesPage() {
   });
 
   const toggleRole = useMutation({
-    mutationFn: async ({ userId, role, add }: { userId: string; role: string; add: boolean }) => {
+    mutationFn: async ({
+      userId,
+      role,
+      add,
+    }: {
+      userId: string;
+      role: "admin" | "cashier" | "technician";
+      add: boolean;
+    }) => {
       if (add) {
         const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
         if (error) throw error;

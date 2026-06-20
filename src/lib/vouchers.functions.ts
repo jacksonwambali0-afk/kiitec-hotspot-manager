@@ -23,7 +23,7 @@ const generateSchema = z.object({
  */
 export const generateVouchers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: unknown) => generateSchema.parse(data))
+  .inputValidator((data: unknown) => generateSchema.parse(data))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
