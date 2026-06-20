@@ -13,6 +13,7 @@ export interface VoucherRow {
   buyer_name: string | null;
   buyer_phone: string | null;
   expires_at: string | null;
+  activated_at: string | null;
   bound_mac: string | null;
   comment: string | null;
   created_at: string;

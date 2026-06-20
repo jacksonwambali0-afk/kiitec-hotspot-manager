@@ -309,7 +309,7 @@ function DiagnosticsPage() {
                       <p className="text-sm text-muted-foreground">
                         {test.message}
                       </p>
-                      {test.data && (
+                      {!!test.data && (
                         <pre className="mt-2 rounded bg-muted p-2 text-xs overflow-auto max-h-40">
                           {JSON.stringify(test.data, null, 2)}
                         </pre>

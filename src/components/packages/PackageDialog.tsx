@@ -149,11 +149,11 @@ export function PackageDialog({
       if (profileName) {
         if (editing && currentProfileName && currentProfileName !== profileName) {
           await updateMikrotikPackage(
-            { name: currentProfileName },
+            { profileName: currentProfileName },
             { ...profileParams, name: profileName },
           );
         } else if (editing && currentProfileName) {
-          await updateMikrotikPackage({ name: currentProfileName }, profileParams);
+          await updateMikrotikPackage({ profileName: currentProfileName }, profileParams);
         } else {
           await createMikrotikPackage(profileParams);
         }

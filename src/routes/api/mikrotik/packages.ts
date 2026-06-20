@@ -110,7 +110,7 @@ export const Route = createFileRoute("/api/mikrotik/packages")({
           }
 
           const { deletePackage } = await import("@/lib/mikrotik-api.server");
-          await deletePackage(parsed.data.id);
+          await deletePackage({ id: parsed.data.id });
           return new Response(JSON.stringify({ success: true }), {
             status: 200,
             headers: { "Content-Type": "application/json" },
