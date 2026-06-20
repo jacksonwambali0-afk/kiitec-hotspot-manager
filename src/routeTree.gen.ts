@@ -63,8 +63,8 @@ const AuthenticatedVouchersRoute = AuthenticatedVouchersRouteImport.update({
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
-  id: '/users',
-  path: '/users',
+  id: '/staff',
+  path: '/staff',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -164,7 +164,7 @@ export interface FileRoutesByFullPath {
   '/router': typeof AuthenticatedRouterRoute
   '/sessions': typeof AuthenticatedSessionsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/users': typeof AuthenticatedStaffRoute
+  '/staff': typeof AuthenticatedStaffRoute
   '/vouchers': typeof AuthenticatedVouchersRoute
   '/wireguard': typeof AuthenticatedWireguardRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
@@ -188,7 +188,7 @@ export interface FileRoutesByTo {
   '/router': typeof AuthenticatedRouterRoute
   '/sessions': typeof AuthenticatedSessionsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/users': typeof AuthenticatedStaffRoute
+  '/staff': typeof AuthenticatedStaffRoute
   '/vouchers': typeof AuthenticatedVouchersRoute
   '/wireguard': typeof AuthenticatedWireguardRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
@@ -240,7 +240,7 @@ export interface FileRouteTypes {
     | '/router'
     | '/sessions'
     | '/settings'
-    | '/users'
+    | '/staff'
     | '/vouchers'
     | '/wireguard'
     | '/admin/roles'
@@ -264,7 +264,7 @@ export interface FileRouteTypes {
     | '/router'
     | '/sessions'
     | '/settings'
-    | '/users'
+    | '/staff'
     | '/vouchers'
     | '/wireguard'
     | '/admin/roles'
@@ -360,8 +360,8 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/staff': {
       id: '/_authenticated/staff'
-      path: '/users'
-      fullPath: '/users'
+      path: '/staff'
+      fullPath: '/staff'
       preLoaderRoute: typeof AuthenticatedStaffRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
