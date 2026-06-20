@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 const STAFF_ROLES: Array<"cashier" | "technician"> = ["cashier", "technician"];
 
-export const Route = createFileRoute("/_authenticated/users")({
+export const Route = createFileRoute("/_authenticated/staff")({
   head: () => ({ meta: [{ title: "Users — KIITEC Hotspot Management" }] }),
   component: () => (
     <RoleGuard allow={["admin"]}>
