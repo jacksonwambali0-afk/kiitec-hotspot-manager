@@ -82,6 +82,7 @@ export type Database = {
           is_active: boolean
           mikrotik_profile: string | null
           name: string
+          period_mode: string
           price: number
           speed_down_kbps: number | null
           speed_up_kbps: number | null
@@ -98,6 +99,7 @@ export type Database = {
           is_active?: boolean
           mikrotik_profile?: string | null
           name: string
+          period_mode?: string
           price?: number
           speed_down_kbps?: number | null
           speed_up_kbps?: number | null
@@ -114,6 +116,7 @@ export type Database = {
           is_active?: boolean
           mikrotik_profile?: string | null
           name?: string
+          period_mode?: string
           price?: number
           speed_down_kbps?: number | null
           speed_up_kbps?: number | null
