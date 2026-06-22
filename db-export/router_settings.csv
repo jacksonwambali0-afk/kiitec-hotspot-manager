@@ -1,0 +1,2 @@
+id,name,host,api_port,api_use_tls,identity,wireguard_endpoint,wireguard_peer_public_key,connector_token_hash,connector_token_hint,last_seen_at,notes,created_at,updated_at
+9b99337d-a206-48e0-88e1-c82a866c909f,KIITEC RB951,192.168.10.1,8728,f,,,,900d9facb3d4282265788427881418d2dced66aef6eafe26bb56d39e8117f030,519e4e,2026-06-19 12:47:52.434+00,,2026-06-16 05:13:21.699468+00,2026-06-19 12:47:52.755423+00
