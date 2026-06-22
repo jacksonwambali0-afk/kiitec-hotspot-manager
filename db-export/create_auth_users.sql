@@ -40,7 +40,13 @@ BEGIN
       instance_id, id, aud, role, email,
       encrypted_password, email_confirmed_at,
       raw_app_meta_data, raw_user_meta_data,
-      created_at, updated_at
+      created_at, updated_at,
+      -- Token columns MUST be '' (empty string), NOT NULL. Supabase Auth
+      -- (GoTrue) scans them into non-nullable strings during sign-in, and a
+      -- NULL value crashes login with a 500 Internal Server Error.
+      confirmation_token, recovery_token, email_change,
+      email_change_token_new, email_change_token_current,
+      phone_change, phone_change_token, reauthentication_token
     ) VALUES (
       '00000000-0000-0000-0000-000000000000',
       staff.id,
@@ -52,7 +58,10 @@ BEGIN
       '{"provider":"email","providers":["email"]}',
       jsonb_build_object('full_name', staff.full_name),
       now(),
-      now()
+      now(),
+      '', '', '',
+      '', '',
+      '', '', ''
     );
 
     -- Identity row (required for email/password login on newer Supabase)
