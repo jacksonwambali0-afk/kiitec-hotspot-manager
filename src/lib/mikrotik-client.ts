@@ -2,6 +2,8 @@
  * Client-side hooks for MikroTik Packages and Vouchers
  * These fetch from the backend API which queries MikroTik directly
  */
+import { authedFetch } from "@/lib/authed-fetch";
+
 
 export interface Package {
   id: string;
