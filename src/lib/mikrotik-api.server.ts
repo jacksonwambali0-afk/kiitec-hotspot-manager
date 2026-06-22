@@ -8,38 +8,11 @@
  * - /ip/hotspot/user (Vouchers/Users)
  */
 
-import { readFileSync, existsSync } from "fs";
-import { resolve } from "path";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
+// MikroTik connection settings are read exclusively from environment variables
+// (managed via the platform secrets manager). Credentials are NEVER read from a
+// committed file — see MIKROTIK_HOST / MIKROTIK_PORT / MIKROTIK_USER /
+// MIKROTIK_PASSWORD / MIKROTIK_USE_TLS secrets.
 
-// Load environment from docs/connector/.env
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const connectorEnvPath = resolve(__dirname, "../../docs/connector/.env");
-
-function loadConnectorEnv() {
-  if (existsSync(connectorEnvPath)) {
-    try {
-      const content = readFileSync(connectorEnvPath, "utf-8");
-      content.split("\n").forEach((line) => {
-        const trimmed = line.trim();
-        if (trimmed && !trimmed.startsWith("#")) {
-          const [key, ...valueParts] = trimmed.split("=");
-          const value = valueParts.join("=");
-          if (key && value && !process.env[key]) {
-            process.env[key] = value;
-          }
-        }
-      });
-      console.log("[MikroTik] Loaded env from", connectorEnvPath);
-    } catch (err) {
-      console.warn("[MikroTik] Failed to load .env from", connectorEnvPath, err instanceof Error ? err.message : "");
-    }
-  }
-}
-
-loadConnectorEnv();
 
 export interface MikroTikConfig {
   host: string;
