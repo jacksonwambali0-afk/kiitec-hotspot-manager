@@ -1,0 +1,3 @@
+id,code,username,password,package_id,batch_id,status,price,sold_at,sold_by,buyer_name,buyer_phone,activated_at,expires_at,used_data_mb,bound_mac,comment,created_by,created_at,updated_at
+ed9601a9-92ef-48e9-9874-1ab3c22ba6e2,ABC123,ABC123,ABC123,77ac59fa-3c3e-4d4a-8e51-d7f9ce954ee4,,unused,500.00,,,,,,,0,,,,2026-06-16 11:33:54.130655+00,2026-06-16 11:33:54.130655+00
+023793be-61a4-4f89-9c3f-da3db55b0e7a,KT-3Q2MWCYP,KT-3Q2MWCYP,KT-3Q2MWCYP,77ac59fa-3c3e-4d4a-8e51-d7f9ce954ee4,499b14f0-74d4-4664-965a-7192de1ce02d,sold,500.00,2026-06-18 21:34:44.318+00,6df789e2-9382-4f92-8e75-41806c9d1629,,,,,0,,,6df789e2-9382-4f92-8e75-41806c9d1629,2026-06-18 18:03:14.499557+00,2026-06-18 21:34:44.535154+00

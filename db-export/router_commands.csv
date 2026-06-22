@@ -1,0 +1,7 @@
+id,type,payload,status,result,created_by,created_at,completed_at
+cd9b08ed-ab57-41b5-8057-f6e4548cc788,disconnect_session,"{""username"": ""new"", ""session_key"": ""new-78:36:CC:32:2F:71""}",done,Disconnected,6df789e2-9382-4f92-8e75-41806c9d1629,2026-06-16 09:45:41.217373+00,2026-06-16 09:45:51.373+00
+9c6d1bc0-1134-410e-bb7a-41ec439c6279,disconnect_session,"{""username"": ""new"", ""session_key"": ""new-78:36:CC:32:2F:71""}",done,Disconnected,6df789e2-9382-4f92-8e75-41806c9d1629,2026-06-16 09:46:47.040074+00,2026-06-16 09:47:01.835+00
+8c639421-a07f-4880-89f7-dfe967ea0e02,disconnect_session,"{""username"": ""new"", ""session_key"": ""new-78:36:CC:32:2F:71""}",failed,Session not found,6df789e2-9382-4f92-8e75-41806c9d1629,2026-06-16 10:08:50.193734+00,2026-06-16 10:10:10.261+00
+535345fa-f9c7-42e8-bdad-3c6f697b458d,disconnect_session,"{""username"": ""new"", ""session_key"": ""new-78:36:CC:32:2F:71""}",failed,Session not found,6df789e2-9382-4f92-8e75-41806c9d1629,2026-06-16 10:11:31.632134+00,2026-06-16 10:11:44.643+00
+cfdd9ded-17e2-4ac6-b761-913423f8a3c8,disconnect_session,"{""username"": ""new"", ""session_key"": ""*C0A80AF0""}",done,Disconnected,6df789e2-9382-4f92-8e75-41806c9d1629,2026-06-16 10:19:17.992703+00,2026-06-16 10:19:33.49+00
+4461b590-b577-455e-9330-a5fca8a6eb17,reboot,{},sent,,6df789e2-9382-4f92-8e75-41806c9d1629,2026-06-17 22:01:42.778827+00,
