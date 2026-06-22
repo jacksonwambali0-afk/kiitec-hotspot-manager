@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireApiRoles } from "@/lib/api-auth.server";
 
 export const Route = createFileRoute("/api/mikrotik/stats")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
+        const authResult = await requireApiRoles(request, ["admin", "cashier", "technician"]);
+        if ("error" in authResult) return authResult.error;
         try {
           const { getRouterStats } = await import("@/lib/mikrotik-api.server");
           const data = await getRouterStats();
