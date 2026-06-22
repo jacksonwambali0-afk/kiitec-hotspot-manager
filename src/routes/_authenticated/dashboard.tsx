@@ -61,7 +61,7 @@ function DashboardPage() {
   const { data: routerStats, isLoading: statsLoading } = useQuery({
     queryKey: ["mikrotik-stats"],
     queryFn: async () => {
-      const res = await fetch("/api/mikrotik/stats");
+      const res = await authedFetch("/api/mikrotik/stats");
       if (!res.ok) throw new Error("Failed to fetch router stats");
       return res.json();
     },
@@ -73,7 +73,7 @@ function DashboardPage() {
   const { data: devicesData, isLoading: devicesLoading } = useQuery({
     queryKey: ["mikrotik-devices"],
     queryFn: async () => {
-      const res = await fetch("/api/mikrotik/online-devices");
+      const res = await authedFetch("/api/mikrotik/online-devices");
       if (!res.ok) throw new Error("Failed to fetch online devices");
       return res.json();
     },
