@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { requireApiRoles } from "@/lib/api-auth.server";
 
 const createPackageSchema = z.object({
   name: z.string().min(1).max(100),
@@ -25,7 +26,9 @@ const deletePackageSchema = z.object({
 export const Route = createFileRoute("/api/mikrotik/packages")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
+        const authResult = await requireApiRoles(request, ["admin", "cashier", "technician"]);
+        if ("error" in authResult) return authResult.error;
         try {
           const { getPackages } = await import("@/lib/mikrotik-api.server");
           const packages = await getPackages();
@@ -46,6 +49,8 @@ export const Route = createFileRoute("/api/mikrotik/packages")({
       },
 
       POST: async ({ request }) => {
+        const authResult = await requireApiRoles(request, ["admin", "technician"]);
+        if ("error" in authResult) return authResult.error;
         try {
           const body = await request.json();
           const parsed = createPackageSchema.safeParse(body);
@@ -72,6 +77,8 @@ export const Route = createFileRoute("/api/mikrotik/packages")({
       },
 
       PATCH: async ({ request }) => {
+        const authResult = await requireApiRoles(request, ["admin", "technician"]);
+        if ("error" in authResult) return authResult.error;
         try {
           const body = await request.json();
           const parsed = updatePackageSchema.safeParse(body);
@@ -99,6 +106,8 @@ export const Route = createFileRoute("/api/mikrotik/packages")({
       },
 
       DELETE: async ({ request }) => {
+        const authResult = await requireApiRoles(request, ["admin", "technician"]);
+        if ("error" in authResult) return authResult.error;
         try {
           const body = await request.json();
           const parsed = deletePackageSchema.safeParse(body);

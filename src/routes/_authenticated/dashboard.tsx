@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { ROLE_LABELS } from "@/lib/nav";
 import { TZS } from "@/lib/voucher-utils";
+import { authedFetch } from "@/lib/authed-fetch";
 import { PageHeader, RoleGuard } from "@/components/layout/PageParts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -61,7 +62,7 @@ function DashboardPage() {
   const { data: routerStats, isLoading: statsLoading } = useQuery({
     queryKey: ["mikrotik-stats"],
     queryFn: async () => {
-      const res = await fetch("/api/mikrotik/stats");
+      const res = await authedFetch("/api/mikrotik/stats");
       if (!res.ok) throw new Error("Failed to fetch router stats");
       return res.json();
     },
@@ -73,7 +74,7 @@ function DashboardPage() {
   const { data: devicesData, isLoading: devicesLoading } = useQuery({
     queryKey: ["mikrotik-devices"],
     queryFn: async () => {
-      const res = await fetch("/api/mikrotik/online-devices");
+      const res = await authedFetch("/api/mikrotik/online-devices");
       if (!res.ok) throw new Error("Failed to fetch online devices");
       return res.json();
     },

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { requireApiRoles } from "@/lib/api-auth.server";
 
 const createVoucherSchema = z.object({
   name: z.string().min(1).max(100),
@@ -28,7 +29,9 @@ const deleteVoucherSchema = z.object({
 export const Route = createFileRoute("/api/mikrotik/vouchers")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
+        const authResult = await requireApiRoles(request, ["admin", "cashier", "technician"]);
+        if ("error" in authResult) return authResult.error;
         try {
           const { getVouchers } = await import("@/lib/mikrotik-api.server");
           const vouchers = await getVouchers();
@@ -49,6 +52,8 @@ export const Route = createFileRoute("/api/mikrotik/vouchers")({
       },
 
       POST: async ({ request }) => {
+        const authResult = await requireApiRoles(request, ["admin", "technician"]);
+        if ("error" in authResult) return authResult.error;
         try {
           const body = await request.json();
           const parsed = createVoucherSchema.safeParse(body);
@@ -75,6 +80,8 @@ export const Route = createFileRoute("/api/mikrotik/vouchers")({
       },
 
       PATCH: async ({ request }) => {
+        const authResult = await requireApiRoles(request, ["admin", "technician"]);
+        if ("error" in authResult) return authResult.error;
         try {
           const body = await request.json();
           const parsed = updateVoucherSchema.safeParse(body);
@@ -102,6 +109,8 @@ export const Route = createFileRoute("/api/mikrotik/vouchers")({
       },
 
       DELETE: async ({ request }) => {
+        const authResult = await requireApiRoles(request, ["admin", "technician"]);
+        if ("error" in authResult) return authResult.error;
         try {
           const body = await request.json();
           const parsed = deleteVoucherSchema.safeParse(body);

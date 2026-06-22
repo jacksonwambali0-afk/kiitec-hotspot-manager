@@ -2,6 +2,8 @@
  * Client-side hooks for MikroTik Packages and Vouchers
  * These fetch from the backend API which queries MikroTik directly
  */
+import { authedFetch } from "@/lib/authed-fetch";
+
 
 export interface Package {
   id: string;
@@ -28,7 +30,7 @@ export interface Voucher {
  * Fetch all packages from MikroTik
  */
 export async function fetchPackages(): Promise<Package[]> {
-  const res = await fetch("/api/mikrotik/packages");
+  const res = await authedFetch("/api/mikrotik/packages");
   if (!res.ok) {
     const error = await res.text();
     throw new Error(`Failed to fetch packages: ${error}`);
@@ -46,7 +48,7 @@ export async function createPackage(pkg: {
   rateLimit?: string;
   sharedUsers?: number;
 }): Promise<string> {
-  const res = await fetch("/api/mikrotik/packages", {
+  const res = await authedFetch("/api/mikrotik/packages", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(pkg),
@@ -63,7 +65,7 @@ export async function updatePackage(
   target: { id?: string; profileName?: string },
   pkg: { name?: string; sessionTime?: string; rateLimit?: string; sharedUsers?: number },
 ): Promise<void> {
-  const res = await fetch("/api/mikrotik/packages", {
+  const res = await authedFetch("/api/mikrotik/packages", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...target, ...pkg }),
@@ -78,7 +80,7 @@ export async function updatePackage(
  * Delete a package from MikroTik
  */
 export async function deletePackage(identifier: { id?: string; profileName?: string }): Promise<void> {
-  const res = await fetch("/api/mikrotik/packages", {
+  const res = await authedFetch("/api/mikrotik/packages", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(identifier),
@@ -93,7 +95,7 @@ export async function deletePackage(identifier: { id?: string; profileName?: str
  * Fetch all vouchers from MikroTik
  */
 export async function fetchVouchers(): Promise<Voucher[]> {
-  const res = await fetch("/api/mikrotik/vouchers");
+  const res = await authedFetch("/api/mikrotik/vouchers");
   if (!res.ok) {
     const error = await res.text();
     throw new Error(`Failed to fetch vouchers: ${error}`);
@@ -111,7 +113,7 @@ export async function createVoucher(voucher: {
   profile: string;
   comment?: string;
 }): Promise<string> {
-  const res = await fetch("/api/mikrotik/vouchers", {
+  const res = await authedFetch("/api/mikrotik/vouchers", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(voucher),
@@ -131,7 +133,7 @@ export async function updateVoucher(
   target: { id?: string; username?: string },
   updates: { disabled?: boolean; profile?: string; comment?: string },
 ): Promise<void> {
-  const res = await fetch("/api/mikrotik/vouchers", {
+  const res = await authedFetch("/api/mikrotik/vouchers", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...target, ...updates }),
@@ -146,7 +148,7 @@ export async function updateVoucher(
  * Delete a voucher from MikroTik
  */
 export async function deleteVoucher(identifier: { id?: string; username?: string }): Promise<void> {
-  const res = await fetch("/api/mikrotik/vouchers", {
+  const res = await authedFetch("/api/mikrotik/vouchers", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(identifier),
