@@ -49,6 +49,8 @@ export const Route = createFileRoute("/api/mikrotik/packages")({
       },
 
       POST: async ({ request }) => {
+        const authResult = await requireApiRoles(request, ["admin", "technician"]);
+        if ("error" in authResult) return authResult.error;
         try {
           const body = await request.json();
           const parsed = createPackageSchema.safeParse(body);
@@ -75,6 +77,8 @@ export const Route = createFileRoute("/api/mikrotik/packages")({
       },
 
       PATCH: async ({ request }) => {
+        const authResult = await requireApiRoles(request, ["admin", "technician"]);
+        if ("error" in authResult) return authResult.error;
         try {
           const body = await request.json();
           const parsed = updatePackageSchema.safeParse(body);
@@ -102,6 +106,8 @@ export const Route = createFileRoute("/api/mikrotik/packages")({
       },
 
       DELETE: async ({ request }) => {
+        const authResult = await requireApiRoles(request, ["admin", "technician"]);
+        if ("error" in authResult) return authResult.error;
         try {
           const body = await request.json();
           const parsed = deletePackageSchema.safeParse(body);
