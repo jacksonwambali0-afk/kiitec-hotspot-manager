@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { ROLE_LABELS } from "@/lib/nav";
 import { TZS } from "@/lib/voucher-utils";
+import { authedFetch } from "@/lib/authed-fetch";
 import { PageHeader, RoleGuard } from "@/components/layout/PageParts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
